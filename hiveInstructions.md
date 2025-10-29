@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y python3 python3-pip vim nano
 USER hive
 ```
 
-5. With the powershell open to the current working directory location that contains the `Containerfile`, and already havin run `podman machine start` type the following command in the terminal window:
+5. With the powershell open to the current working directory location that contains the `Containerfile`, and already having run `podman machine start` type the following command in the terminal window:
 ```
 podman build -t custom-hive-image .
 ```
@@ -66,7 +66,7 @@ such as the location of it's data:
 DESCRIBE FORMATTED hive_example;  
 ```
 
-13. Now insert some data and then run a couple queries in the beelin:
+13. Now insert some data and then run a couple queries in the beeline:
 ```
 INSERT INTO hive_example2 values('x', 1), ('x', 2),('y',3);
 SELECT COUNT(distinct a) FROM hive_example2;
@@ -75,16 +75,20 @@ SELECT SUM(b) FROM hive_example2;
 
 14. to exit the beeline type `ctrl + c`, and then to exit the container type `exit`
 
-15. next time you want to run the same container just type in powershell:
+
+15. to stop the container type:
+```podman stop hive4```
+
+16. next time you want to run the same container just type in powershell:
 ```
 podman start hive4
 ```
 
-16. and to access the container again with an interactive shell type:
+17. and to access the container again with an interactive shell type:
 ```
 podman exec -it hive4 /bin/bash
 ```
 
-Now you have successfully installed Hive ontop of Hadoop and can access your hive using the beeline, here you can create and access any hive tables you need.
+Now you have successfully installed Hive on top of Hadoop and can access your hive using the beeline, here you can create and access any hive tables you need.
 
 Note: if you prefer Docker, you can use Docker instead, the only different is to replace the word `podman` with `docker` in all commands and instead of a file named `Containerfile` to build your image, you will create a file named `Dockerfile`

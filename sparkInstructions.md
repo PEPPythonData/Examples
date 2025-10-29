@@ -41,9 +41,9 @@ ENV PYSPARK_PYTHON=/usr/bin/python3 \
     PYSPARK_DRIVER_PYTHON=/usr/bin/python3
 ```
 
-6. With the powershell open to the current working directory location that contains the `Containerfile`, and already havin run `podman machine start` type the following command in the terminal window:
+6. With the powershell open to the current working directory location that contains the `Containerfile`, and already having run `podman machine start` type the following command in the terminal window:
 ```
-podman build -t custom-spark-image . .
+podman build -t custom-spark-image .
 ```
 
 7. once the previous steps completes, enter the following command in the same window:
@@ -66,7 +66,7 @@ podman ps
 podman exec -it spark-master /bin/sh
 ```
 
-10. Now you can run commands inside the container from your powershell or terminal of your choice, first let's create basic pyspark program using our text editor vim. First let's change directories to where we want to create the file using the following command:
+10. Now you can run commands inside the container from your powershell or terminal of your choice, first let's create a basic pyspark program using our text editor vim. First let's change directories to where we want to create the file using the following command:
 ```bash
 cd /opt/spark/work-dir
 ```
@@ -118,7 +118,7 @@ df2 = spark.createDataFrame(data, columns)
 df2.show()
 df3=df2.coalesce(1)
 
-df3.write.format("csv").mode("overwrite").save("file:///opt/spark/work-dir")
+df3.write.format("csv").mode("overwrite").save("file:///opt/spark/work-dir/output")
 
 
 # Get the SparkContext from the SparkSession
@@ -141,21 +141,39 @@ print(rdd.collect())  # Output: [1, 2, 3, 4, 5]
 python3 sparkTest.py
 ```
 
-20. (Optional) Alternatively you could run using spark-submit:
+20. To see the csv you wrote to a file type the below command in the containers terminal:
+```
+cat /opt/spark/work-dir/output/*.csv
+```
+
+21. (Optional) Alternatively you could run using spark-submit:
 ```
 spark-submit /opt/spark/work-dir/sparkTest.py
 ```
 
-21. next time you want to run the same container just type in powershell:
+22. to exit the container's terminal in powershell type:
+```
+exit
+```
+23. to stop the container type:
+```podman stop spark-master```
+```podman stop spark-worker```
+
+24. next time you want to run the same container just type in powershell:
 ```
 podman start spark-master
 ```
 
-22. and to access the container again with an interactive shell type:
+25. Also remember to start the worker next time you want to run spark, just type in powershell:
+```
+podman start spark-worker
+```
+
+26. and to access the container again with an interactive shell type:
 ```
 podman exec -it spark-master /bin/bash
 ```
 
-Now you have successfully installed Spark ontop of Hadoop, here you can run PySpark code on a Spark cluster.
+Now you have successfully installed Spark on top of Hadoop, here you can run PySpark code on a Spark cluster.
 
 Note: if you prefer Docker, you can use Docker instead, the only different is to replace the word `podman` with `docker` in all commands and instead of a file named `Containerfile` to build your image, you will create a file named `Dockerfile`
