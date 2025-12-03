@@ -1,0 +1,22 @@
+FROM apache/spark
+
+# Switch to root user to install Python
+USER root
+
+# Update and install Python3 and pip
+RUN apt-get update && apt-get install -y python3 python3-pip vim nano 
+
+# Install PySpark
+RUN pip install pyspark
+
+# Switch back to spark user (replace 'spark' with the appropriate user if it's different)
+USER spark
+
+# Set workdir
+WORKDIR /opt/spark/work-dir
+
+# Set environment variables for PySpark
+ENV PYSPARK_PYTHON=/usr/bin/python3 \
+    PYSPARK_DRIVER_PYTHON=/usr/bin/python3
+	
+COPY sparkTest2.py /opt/spark/work-dir/
