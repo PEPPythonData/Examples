@@ -1,0 +1,19 @@
+
+You really just need to know Python and work in a linux terminal. Here is the fundamental concept, you can write DAGs a few different ways (this is the docs too): https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html
+ 
+I would recommend starting here:
+https://airflow.apache.org/docs/apache-airflow/stable/start.html
+ 
+next go here:
+ 
+https://airflow.apache.org/docs/apache-airflow/stable/tutorial/fundamentals.html
+ 
+Try to implement this example or something similar, but you will need to make a few changes (the api works but may need slightly different URL and I skipped using the avro package he really likes):
+https://www.datacamp.com/tutorial/building-an-etl-pipeline-with-airflow 
+ 
+I had something like this as proof of concept (attaching python file)
+ 
+Also, if you have a trial databricks account and want to integrate with that (optional): 
+https://docs.databricks.com/aws/en/jobs/how-to/use-airflow-with-jobs
+https://docs.databricks.com/aws/en/jobs/jobs-quickstart
+ 
