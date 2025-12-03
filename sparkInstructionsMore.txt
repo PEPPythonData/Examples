@@ -1,0 +1,3 @@
+podman run -d --name spark-master --mount type=bind,source="$(pwd)/tmp",target=/tmp/mounted --network my_network -p 7077:7077 -p 8080:8080 custom-spark-image /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+
+podman run -d --name spark-worker --network my_network -p 8081:8081 custom-spark-image /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
