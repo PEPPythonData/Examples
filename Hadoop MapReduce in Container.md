@@ -1,7 +1,5 @@
 ## Hadoop MapReduce Executed in a Container
 
-For the most updated version of this and other examples, see: https://github.com/PEPPythonData/Examples
-
 ### What you're building
 
 This walkthrough writes the "hello world" of big data — a word count — using the classic MapReduce pattern: a **mapper** that turns each line of text into `(word, 1)` pairs, and a **reducer** that sums those pairs up per word. You'll write both in plain Python and run them two ways: first by piping them together yourself on the command line (so you can see exactly what each stage does), and then using Hadoop's real streaming API, which is how MapReduce jobs actually get submitted to a cluster.
