@@ -2,13 +2,13 @@
 
 ### What you're building
 
-You're going to stand up a small **Spark standalone cluster** — one master node and one worker node, each running in its own container — and then submit a PySpark program to it. This is a simplified, local version of how Spark actually runs in production: a master that coordinates work, and one or more workers that execute it. Note that this setup does _not_ involve Hadoop or HDFS — Spark can run entirely on its own, and here your PySpark script just reads/writes to the local container filesystem.
+You're going to stand up a small **Spark standalone cluster**, one master node and one worker node, each running in its own container, and then submit a PySpark program to it. This is a simplified, local version of how Spark actually runs in production: a master that coordinates work, and one or more workers that execute it. Note that this setup does not involve Hadoop or HDFS. Spark can run entirely on its own, and here your PySpark script just reads and writes to the local container filesystem.
 
 ---
 
 1. [Install Podman and Podman Desktop](https://podman.io/docs/installation).
 
-2. Start the Podman VM (Windows/macOS only — skip this on Linux, where Podman doesn't need a VM):
+2. Start the Podman VM (Windows/macOS only; skip this on Linux, where Podman doesn't need a VM):
 
 ```
 podman machine start
@@ -47,7 +47,7 @@ ENV PYSPARK_PYTHON=/usr/bin/python3 \
     PYSPARK_DRIVER_PYTHON=/usr/bin/python3
 ```
 
-> **Note:** `FROM apache/spark` pulls whatever the `latest` tag currently points to. For reproducible builds, consider pinning an explicit version tag instead (e.g. `apache/spark:3.5.7`) — check the [apache/spark tags on Docker Hub](https://hub.docker.com/r/apache/spark/tags) for current options.
+> **Note:** `FROM apache/spark` pulls whatever the `latest` tag currently points to. For reproducible builds, consider pinning an explicit version tag instead (e.g. `apache/spark:3.5.7`). Check the [apache/spark tags on Docker Hub](https://hub.docker.com/r/apache/spark/tags) for current options.
 
 6. Build the image:
 
@@ -61,7 +61,7 @@ podman build -t custom-spark-image .
 podman run -d --name spark-master --network my_network -p 7077:7077 -p 8080:8080 custom-spark-image /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
 ```
 
-8. Start the Spark **worker** container. This is the process that actually executes the work the master assigns it. `spark://spark-master:7077` tells the worker where to find the master — this works because both containers are on `my_network` and can resolve each other by container name:
+8. Start the Spark **worker** container. This is the process that actually executes the work the master assigns it. `spark://spark-master:7077` tells the worker where to find the master. That works because both containers are on `my_network` and can resolve each other by container name:
 
 ```
 podman run -d --name spark-worker --network my_network -p 8081:8081 custom-spark-image /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
@@ -75,7 +75,7 @@ podman ps
 
 You should see `spark-master` and `spark-worker` both listed as "Up". You can also open `http://localhost:8080` in a browser to see the Spark master's web UI, which shows the worker registered underneath it.
 
-10. Open an interactive shell inside the master container — this is where you'll write and run your PySpark script:
+10. Open an interactive shell inside the master container. This is where you'll write and run your PySpark script:
 
 ```
 podman exec -it spark-master /bin/sh
@@ -107,7 +107,7 @@ touch sparkTest.py
 vim sparkTest.py
 ```
 
-15. If you haven't typed anything yet, skip this step. Otherwise: press `ESC`, then type `:q!` and press Enter to quit without saving — useful any time you want to back out of vim without keeping changes.
+15. If you haven't typed anything yet, skip this step. Otherwise, press `ESC`, then type `:q!` and press Enter to quit without saving. This is useful any time you want to back out of vim without keeping changes.
 
 16. Press `Insert` (or `i`) to enter INSERT mode.
 
@@ -162,7 +162,7 @@ print(rdd.collect())  # Output: [1, 2, 3, 4, 5]
 
 19. Type `:wq` and press Enter to save and quit.
 
-20. Run your first Spark program. Note that `.master("local[*]")` in the script means Spark will run this particular job using all available cores on the _local_ machine, rather than distributing it across the master/worker cluster you just built — this keeps the example simple and reliable to run:
+20. Run your first Spark program. Note that `.master("local[*]")` in the script means Spark will run this particular job using all available cores on the _local_ machine, rather than distributing it across the master/worker cluster you just built. This keeps the example simple and reliable to run:
 
 ```
 python3 sparkTest.py
@@ -176,7 +176,7 @@ You should see two small tables printed (from `df.show()` and `df2.show()`), fol
 cat /opt/spark/work-dir/output/*.csv
 ```
 
-22. (Optional) You can also launch the same script using `spark-submit`, Spark's standard job-submission tool — this is the command you'd typically use in a real deployment rather than calling `python3` directly:
+22. (Optional) You can also launch the same script using `spark-submit`, Spark's standard job-submission tool. This is the command you'd typically use in a real deployment rather than calling `python3` directly:
 
 ```
 spark-submit /opt/spark/work-dir/sparkTest.py
@@ -210,15 +210,15 @@ podman exec -it spark-master /bin/bash
 
 You've now stood up a small Spark cluster (one master, one worker) and run a PySpark program against it, using both the DataFrame API and the RDD API.
 
-**Using Docker instead of Podman:** the steps are identical — just replace `podman` with `docker` everywhere, and name your build file `Dockerfile` instead of `Containerfile`.
+**Using Docker instead of Podman:** the steps are identical. Just replace `podman` with `docker` everywhere, and name your build file `Dockerfile` instead of `Containerfile`.
 
 ---
 
 ## Bonus: Persisting Data with a Volume Mount
 
-Everything above works, but there's one limitation you may have noticed: the CSV output you wrote in step 21 only exists inside the `spark-master` container's filesystem. If you remove that container, the output goes with it — and you can't inspect it from your host machine without running `podman exec` first.
+Everything above works, but there's one limitation you may have noticed: the CSV output you wrote in step 21 only exists inside the `spark-master` container's filesystem. If you remove that container, the output goes with it, and you can't inspect it from your host machine without running `podman exec` first.
 
-This section shows how to fix that by **bind-mounting** a folder from your host machine into the container, so the two share a folder in real time. It's not required for the core exercise above, but it's a useful pattern to understand since "where did my data go?" is one of the most common points of confusion when people first start working with containers.
+This optional section shows how to fix that by **bind-mounting** a folder from your host machine into the container, so the two share a folder in real time. It's not required for the core exercise above, but it's a useful pattern to understand, since "where did my data go?" is one of the most common points of confusion when people first start working with containers.
 
 ### Why this matters
 
@@ -250,10 +250,10 @@ podman run -d --name spark-master \
 > --mount type=bind,source="${PWD}/tmp",target=/tmp/mounted
 > ```
 
-3. Start `spark-worker` exactly as in step 8 — it doesn't need the mount, since your PySpark script (running as the driver on `spark-master`) is the process doing the file reading/writing:
+3. Start `spark-worker` exactly as in step 8. It doesn't need the mount, since your PySpark script (running as the driver on `spark-master`) is the process doing the file reading and writing:
 
 ```
 podman run -d --name spark-worker --network my_network -p 8081:8081 custom-spark-image /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
 ```
 
-4. Try modifying `sparkTest.py` so it writes its CSV output to `/tmp/mounted/output` instead of `/opt/spark/work-dir/output`, then re-run it. Afterwards, check the `tmp` folder on your own host machine — you should see the output show up there directly, without needing to enter the container at all.
+4. Try modifying `sparkTest.py` so it writes its CSV output to `/tmp/mounted/output` instead of `/opt/spark/work-dir/output`, then re-run it. Afterwards, check the `tmp` folder on your own host machine. You should see the output show up there directly, without needing to enter the container at all.
