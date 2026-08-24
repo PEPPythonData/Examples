@@ -1,4 +1,4 @@
-## Hadoop MapReduce Executed in a Container
+# Hadoop MapReduce Executed in a Container
 
 ### What you're building
 
@@ -20,19 +20,19 @@ You'll do this inside the same Hive container from `hiveInstructions.md`, since 
 
 3. Start the Podman VM (Windows/macOS only; skip on Linux):
 
-```
+```bash
 podman machine start
 ```
 
 4. Start your existing `hive4` container:
 
-```
+```bash
 podman start hive4
 ```
 
 5. Open an interactive shell inside it:
 
-```
+```bash
 podman exec -it hive4 /bin/bash
 ```
 
@@ -40,25 +40,25 @@ podman exec -it hive4 /bin/bash
 
 6. Change into the `/tmp` directory. You need write permission to create and edit files, and `/tmp` is writable by any user inside the container:
 
-```
+```bash
 cd /tmp
 ```
 
 7. Create an empty file for your mapper:
 
-```
+```bash
 touch mapper.py
 ```
 
 8. Create an empty file for your reducer:
 
-```
+```bash
 touch reducer.py
 ```
 
 9. Confirm both files exist:
 
-```
+```bash
 ls
 ```
 
@@ -155,11 +155,11 @@ Save and quit the same way: `ESC`, then `:wq`.
 
 ### Making the scripts runnable
 
-17. Both scripts need execute permission before Hadoop (or you, directly) can run them. `chmod 777` grants read/write/execute to everyone, which is fine for this local learning exercise but is broader than you'd want on a shared or production system. A more scoped-down `chmod 755` would also work here:
+17. Both scripts need execute permission before Hadoop (or you, directly) can run them. Use `chmod 755` to give the file owner read, write, and execute permissions while allowing others to read and execute the scripts.
 
-```
-chmod 777 mapper.py
-chmod 777 reducer.py
+```bash
+chmod 755 mapper.py
+chmod 755 reducer.py
 ```
 
 ### Testing the mapper and reducer yourself, without Hadoop
@@ -168,58 +168,66 @@ Before handing this off to Hadoop, it's worth running the pipeline by hand so yo
 
 18. Pipe a string of words straight into your mapper. You should see each word printed out on its own line, paired with a `1`:
 
-```
+```bash
 echo "foo foo quux labs foo bar quux" | ./mapper.py
 ```
 
 19. Now chain the mapper's output through `sort` (to group identical words together, mimicking what Hadoop does automatically) and into the reducer. You should get back a word count: `foo` appears 3 times, `quux` 2 times, and `labs`/`bar` once each:
 
-```
+```bash
 echo "foo foo quux labs foo bar quux" | ./mapper.py | sort -k1,1 | ./reducer.py
 ```
 
 20. Let's do the same thing, but reading from a file instead of typing text directly into the pipe. First, create the file:
 
-```
+```bash
 cat > MR.txt
 ```
 
 21. Your terminal is now waiting for input. Paste in the same sample text, press Enter, then press `ctrl+d` to signal end-of-input and finish writing the file:
 
-```
+```text
 foo foo quux labs foo bar quux
 ```
 
 22. Confirm the file was written correctly:
 
-```
+```bash
 cat MR.txt
 ```
 
 23. Run the same mapper/reducer pipeline, this time reading from the file:
 
-```
+```bash
 cat MR.txt | ./mapper.py | sort -k1,1 | ./reducer.py
 ```
 
 ### Running it for real, through Hadoop
 
-24. Now use Hadoop's **streaming API**, a built-in utility that lets you write MapReduce jobs in any language (Python here) that can read from stdin and write to stdout, rather than requiring Java. This submits an actual MapReduce job to Hadoop, using your scripts as the mapper and reducer, with `MR.txt` as input:
+24. Now use Hadoop's **streaming API**, a built-in utility that lets you write MapReduce jobs in any language (Python here) that can read from stdin and write to stdout, rather than requiring Java. This submits an actual MapReduce job to Hadoop, using your scripts as the mapper and reducer, with `MR.txt` as input.
 
-```
+The Hadoop Streaming job in this exercise uses the **local filesystem** for its input and output paths. The input file is `/tmp/MR.txt`, and the job writes its results to `/tmp/output`.
+
+```bash
 hadoop jar /opt/hadoop/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar \
 -file /tmp/mapper.py    -mapper /tmp/mapper.py \
 -file /tmp/reducer.py   -reducer /tmp/reducer.py \
 -input /tmp/MR.txt  -output /tmp/output
 ```
 
-> **Note:** the `hadoop-streaming-3.3.6.jar` filename matches the Hadoop version (3.3.6) bundled with `apache/hive:4.0.1`. If you're using a different Hive/Hadoop version, run `ls /opt/hadoop/share/hadoop/tools/lib/` inside the container to find the exact jar filename to use.
+> **Note:** The `hadoop-streaming-3.3.6.jar` filename matches the Hadoop version (3.3.6) bundled with `apache/hive:4.0.1`. If you're using a different Hive/Hadoop version, run `ls /opt/hadoop/share/hadoop/tools/lib/` inside the container to find the exact JAR filename to use.
 
-> **Important:** Hadoop refuses to run a job if the output directory already exists (it won't silently overwrite results). If you re-run this command, first delete the old output with `hdfs dfs -rm -r /tmp/output` or `rm -rf /tmp/output`, depending on whether Hadoop is writing to HDFS or the local filesystem in your setup.
+> **Important:** Hadoop refuses to run a job if the output directory already exists. If you re-run the command, first remove the existing local output directory:
+>
+> ```bash
+> rm -rf /tmp/output
+> ```
+>
+> Then run the Hadoop Streaming command again.
 
 25. Once the job finishes, print the results Hadoop wrote out. You should see the same word counts as your manual run in step 19/23:
 
-```
+```bash
 cat /tmp/output/*
 ```
 
