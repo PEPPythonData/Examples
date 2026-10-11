@@ -106,7 +106,7 @@ The Spark version is pinned rather than using `latest`, making the exercise more
 Run:
 
 ```bash
-podman build -t custom-spark-image.
+podman build -t custom-spark-image .
 ```
 
 You should see the image build successfully.
